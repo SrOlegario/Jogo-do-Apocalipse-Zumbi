@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Apocalipse Zumbi</title>
+<style>
+  body {
+    background-color: #290202;
+    color: #000000;
+    font-family: 'Courier New', monospace; /* Mantém a fonte Courier New */
+    padding: 30px;
+    line-height: 1.0; /* Aumenta o espaçamento entre linhas para melhor legibilidade */
+    font-size: 30px; /* Aumenta o tamanho base da fonte para o corpo */
+    background-image: url('img/fundo-inicio.JPEG'); /* Fundo inicial */
+    background-size: cover;
+    background-position: center;
+  }
+
+  h1, h2 {
+    color: #0bf517;
+    text-shadow: 2px 2px 4px #290202;
+    font-size: 2.5em; /* Aumenta o tamanho dos títulos (relativo ao body) */
+    font-family: 'Courier New', monospace; /* Mantém a fonte Courier New para títulos */
+  }
+
+  p {
+    font-size: 1.8em; /* Aumenta o tamanho dos parágrafos (relativo ao body) */
+    margin-bottom: 1em; /* Adiciona um pouco mais de espaço abaixo dos parágrafos */
+  }
+
+  .escolha {
+    margin-top: 20px; /* Aumenta o espaçamento superior */
+    padding: 15px; /* Aumenta o preenchimento */
+    background-color: #01ff01;
+    border: 1px solid #20fa03;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 8px; /* Levemente mais arredondado */
+    font-size: 1.1em; /* Aumenta o tamanho do texto nas escolhas */
+    text-align: center; /* Centraliza o texto nas escolhas */
+  }
+
+  .escolha:hover {
+    background-color: #05f805;
+    border-color: #02fd17;
+  }
+
+  input[type="text"] {
+    padding: 10px; /* Aumenta o preenchimento do input */
+    background-color: #333;
+    border: 1px solid #06f512;
+    color: #eee;
+    border-radius: 5px;
+    font-size: 1.1em; /* Aumenta o tamanho do texto dentro do input */
+    width: calc(100% - 22px); /* Ajusta a largura para levar em conta o padding */
+    box-sizing: border-box; /* Garante que padding não aumente a largura total */
+  }
+
+  button {
+    padding: 12px 25px; /* Aumenta o preenchimento do botão */
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+    transition: background-color 0.2s ease;
+    font-size: 1.1em; /* Aumenta o tamanho do texto no botão */
+  }
+
+  button:hover {
+    background-color: #45a049;
+  }
+
+  #audio-container {
+    display: none;
+  }
+
+  ul {
+    list-style-type: none;
+    padding-left: 20px;
+  }
+</style>
+</head>
+<body>
+  <h1>Apocalipse Zumbi</h1>
+  <div id="conteudo">
+    <p><em>Digite seu nome de sobrevivente:</em></p>
+    <input type="text" id="nome" placeholder="Seu nome aqui">
+    <button onclick="iniciarJogo()">Começar</button>
+  </div>
+  <div id="audio-container">
+    <audio id="somFundo" autoplay loop>
+      <source src="som-apocalipse.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="somEvento"></audio>
+  </div>
+  <script>
+    let nome = "Sobrevivente";
+    const somFundo = document.getElementById("somFundo");
+    const somEvento = document.getElementById("somEvento");
+
+    let quizPerguntas = [
+      { pergunta: "1. O mundo começou a colapsar. Você...", opcoes: ["Se tranca e espera instruções oficiais", "Corre pro mercado", "Parte pra mata", "Procura os preparados"], pontos: [1, 2, 3, 4] },
+      { pergunta: "2. Um sobrevivente ferido pede ajuda. Você...", opcoes: ["Ajuda mesmo com risco", "Ignora", "Observa de longe", "Ajuda só se puder controlar"], pontos: [1, 2, 3, 4] },
+      { pergunta: "3. Seu abrigo está sendo invadido. Você...", opcoes: ["Defende até o fim", "Foge", "Arma armadilhas", "Engana e despista"], pontos: [1, 2, 3, 4] },
+      { pergunta: "4. O que é mais importante a longo prazo?", opcoes: ["Empatia", "Força", "Estratégia", "Frieza"], pontos: [1, 2, 3, 4] },
+      { pergunta: "5. Sua maior habilidade é...", opcoes: ["Liderança", "Improviso", "Planejamento", "Psicológico"], pontos: [1, 2, 3, 4] },
+      { pergunta: "6. Viu zumbis se aproximando. Você...", opcoes: ["Se esconde", "Ataca", "Disfarça", "Cria distração"], pontos: [1, 2, 3, 4] },
+      { pergunta: "7. Preferência de abrigo:", opcoes: ["Porão", "Sótão", "Floresta", "Prédio alto"], pontos: [1, 2, 3, 4] },
+      { pergunta: "8. Equipamento essencial:", opcoes: ["Lanterna", "Machado", "Binóculos", "Mochila de fuga"], pontos: [1, 2, 3, 4] },
+      { pergunta: "9. Encontrou comida envenenada. Você...", opcoes: ["Come com medo", "Não come", "Testa com rato", "Dá para outro primeiro"], pontos: [1, 2, 3, 4] },
+      { pergunta: "10. Qual desses você é no grupo?", opcoes: ["Conselheiro", "Batedor", "Inventor", "O solitário"], pontos: [1, 2, 3, 4] },
+      { pergunta: "11. Barulho à noite. Você...", opcoes: ["Vai investigar", "Finge que não ouviu", "Arma armadilha", "Muda de base"], pontos: [1, 2, 3, 4] },
+      { pergunta: "12. Se fosse mordido...", opcoes: ["Esconde", "Conta ao grupo", "Foge sozinho", "Se despede e se isola"], pontos: [1, 2, 3, 4] },
+      { pergunta: "13. Melhor arma improvisada:", opcoes: ["Cano de ferro", "Faca", "Flecha", "Estacas com armadilhas"], pontos: [1, 2, 3, 4] },
+      { pergunta: "14. Decide quem manda no grupo. Você...", opcoes: ["Democracia", "O mais forte", "O mais estratégico", "Você mesmo"], pontos: [1, 2, 3, 4] },
+      { pergunta: "15. Abastecimento mais importante:", opcoes: ["Comida", "Água", "Remédio", "Bateria"], pontos: [1, 2, 3, 4] },
+      { pergunta: "16. Qual som te causa mais medo?", opcoes: ["Gritos humanos", "Vidro quebrando", "Rádio estático", "Silêncio total"], pontos: [1, 2, 3, 4] },
+      { pergunta: "17. Daria abrigo a uma criança?", opcoes: ["Sim", "Não", "Depende", "Só por troca"], pontos: [1, 2, 3, 4] },
+      { pergunta: "18. Se fosse capturado, você...", opcoes: ["Implora", "Engana", "Resiste", "Se mata"], pontos: [1, 2, 3, 4] },
+      { pergunta: "19. Seu maior medo:", opcoes: ["Ficar sozinho", "Virar zumbi", "Perder memória", "Ser traído"], pontos: [1, 2, 3, 4] },
+      { pergunta: "20. Final ideal para você:", opcoes: ["Reconstruir a civilização", "Reinar sobre o caos", "Sumir na floresta", "Ficar sozinho e seguro"], pontos: [1, 2, 3, 4] }
+    ];
+
+    let perguntaAtual = 0;
+    let pontuacaoTotal = 0;
+
+    function quizSobrevivente() {
+      document.body.style.backgroundImage = "url('img/fundo-quiz.PNG')";
+      document.body.style.backgroundSize = "cover";
+      perguntaAtual = 0;
+      pontuacaoTotal = 0;
+      mostrarPergunta();
+    }
+
+    function mostrarPergunta() {
+      const p = quizPerguntas[perguntaAtual];
+      let html = `<h2>Quiz do Sobrevivente</h2><p>${p.pergunta}</p>`;
+      p.opcoes.forEach((opcao, i) => {
+        html += `<div class="escolha" onclick="responder(${p.pontos[i]})">${opcao}</div>`;
+      });
+      document.getElementById("conteudo").innerHTML = html;
+    }
+
+    function responder(ponto) {
+      pontuacaoTotal += ponto;
+      perguntaAtual++;
+      if (perguntaAtual < quizPerguntas.length) {
+        mostrarPergunta();
+      } else {
+        mostrarResultado();
+      }
+    }
+
+    function mostrarResultado() {
+      document.body.style.backgroundImage = "url('img/fundo-dia1.JPEG')";
+      document.body.style.backgroundSize = "cover";
+      let perfil = "";
+      if (pontuacaoTotal <= 30) {
+        perfil = `<h2>Perfil: O Humanista</h2><p>Você confia nas pessoas, mas precisa aprender a dizer não. Sua maior fraqueza é o coração mole. Mas o mundo precisa de esperança.</p>`;
+      } else if (pontuacaoTotal <= 50) {
+        perfil = `<h2>Perfil: O Sobrevivente Prático</h2><p>Você sabe o que é necessário. Improvisa, corre, luta. Mas pode se tornar insensível demais.</p>`;
+      } else if (pontuacaoTotal <= 65) {
+        perfil = `<h2>Perfil: O Silencioso</h2><p>Você observa, age rápido e evita riscos. Pode parecer frio, mas está sempre três passos à frente.</p>`;
+      } else {
+        perfil = `<h2>Perfil: O Camaleão</h2><p>Você mente, manipula e sobrevive de qualquer jeito. Moral? Isso é luxo do mundo antigo.</p>`;
+      }
+      document.getElementById("conteudo").innerHTML = `
+        ${perfil}
+        <p>Sua pontuação final: <strong>${pontuacaoTotal}</strong></p>
+        <div class="escolha" onclick="hora1()">Iniciar Dia 1 - Hora 1</div>
+        <div class="escolha" onclick="iniciarJogo()">Recomeçar o Jogo</div>
+      `;
+    }
+
+    function iniciarDia2() {
+      document.body.style.backgroundImage = "url('img/fundo-dia2.PNG')";
+      document.body.style.backgroundSize = "cover";
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 2: Despertar</h2>
+        <p>Você sobreviveu à primeira noite. Mas algo está estranho. Sons no andar de cima.</p>
+        <div class="escolha" onclick="dia2_acao('investigar')">Subir para investigar</div>
+        <div class="escolha" onclick="dia2_acao('ficar')">Ficar em silêncio e observar</div>
+      `;
+      somEvento.src = "efeito-passos.mp3";
+      somEvento.play();
+    }
+
+    function dia2_acao(opcao) {
+      if (opcao === 'investigar') {
+        document.getElementById("conteudo").innerHTML = `
+          <h2>Você sobe devagar...</h2>
+          <p>Ao chegar no corredor, uma sombra atravessa rapidamente a parede. O som de respiração forte preenche o ambiente.</p>
+          <div class="escolha" onclick="dia2_jumpscare()">Avançar no escuro</div>
+          <div class="escolha" onclick="iniciarDia2()">Voltar e trancar-se</div>
+        `;
+        somEvento.src = "sombra.mp3";
+        somEvento.play();
+      } else {
+        document.getElementById("conteudo").innerHTML = `
+          <h2>Você espera em silêncio</h2>
+          <p>Dois vultos passam pela fresta da janela. Um deles para... parece farejar o ar.</p>
+          <div class="escolha" onclick="dia2_jumpscare()">Preparar armadilha com vidro e lata</div>
+          <div class="escolha" onclick="iniciarDia2()">Se esconder no porão</div>
+        `;
+        somEvento.src = "suspense.mp3";
+        somEvento.play();
+      }
+    }
+
+    function dia2_jumpscare() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Susto!</h2>
+        <img src="img/jumpscare-zumbi.PNG" alt="Jumpscare zumbi" style="width:100%; border-radius:8px; box-shadow: 0 0 10px red;">
+        <p>Uma figura salta na sua direção! Você cai para trás, o som ensurdecedor de vidro estilhaçado ecoa.</p>
+        <p>Você precisa decidir:</p>
+        <div class="escolha" onclick="dia2_fuga()">Fugir pela janela</div>
+        <div class="escolha" onclick="dia2_confronto()">Tentar lutar</div>
+      `;
+      somEvento.src = "jumpscare.mp3";
+      somEvento.play();
+    }
+
+    function dia2_fuga() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Fuga caótica</h2>
+        <p>Você salta pela janela e rola na grama. Arranhões, dor, mas vivo. Agora precisa encontrar abrigo novamente.</p>
+        <p>Fim do Dia 2</p>
+        <div class="escolha" onclick="iniciarDia3()">Continuar para o Dia 3</div>
+      `;
+      somEvento.src = "corrida.mp3";
+      somEvento.play();
+    }
+
+    function dia2_confronto() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Luta desesperada</h2>
+        <p>Você luta com tudo, usando um pedaço de madeira. Consegue derrubar a criatura, mas está ferido.</p>
+        <p>Fim do Dia 2</p>
+        <div class="escolha" onclick="iniciarDia3()">Continuar para o Dia 3</div>
+      `;
+      somEvento.src = "luta.mp3";
+      somEvento.play();
+    }
+    function iniciarDia3() {
+      document.body.style.backgroundImage = "url('img/fundo-dia3.PNG')";
+      document.body.style.backgroundSize = "cover";
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 3: Reconhecimento e Decisão</h2>
+        <p>Você sobreviveu aos horrores da noite passada. O abrigo não é mais seguro. É hora de decidir: explorar ou migrar?</p>
+        <div class="escolha" onclick="dia3Explorar()">Explorar os arredores</div>
+        <div class="escolha" onclick="dia3Migrar()">Migrar para outro local</div>
+      `;
+      somEvento.src = "manha-tenebrosa.mp3";
+      somEvento.play();
+    }
+
+    function dia3Explorar() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Exploração Cautelosa</h2>
+        <p>Você encontra uma antiga oficina com ferramentas, mas há pegadas frescas.</p>
+        <div class="escolha" onclick="dia3Aliado()">Investigar e chamar por alguém</div>
+        <div class="escolha" onclick="dia3Recuar()">Voltar para seu abrigo</div>
+      `;
+      somEvento.src = "passos-metal.mp3";
+      somEvento.play();
+    }
+
+    function dia3Migrar() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Fuga e Esperança</h2>
+        <p>Você caminha por quilômetros até encontrar uma torre de observação abandonada.</p>
+        <p>O local parece seguro, mas há sinais de luta recente.</p>
+        <div class="escolha" onclick="dia3Aliado()">Entrar e investigar</div>
+        <div class="escolha" onclick="dia3Recuar()">Voltar para a floresta</div>
+      `;
+      somEvento.src = "vento-torre.mp3";
+      somEvento.play();
+    }
+
+    function dia3Aliado() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Contato Inesperado</h2>
+        <p>Uma voz sussurra: "Você está armado?"</p>
+        <p>Um sobrevivente aparece. Ele pode ser aliado... ou inimigo disfarçado.</p>
+        <div class="escolha" onclick="dia3Confiar()">Acreditar e conversar</div>
+        <div class="escolha" onclick="dia3Recuar()">Recusar e recuar</div>
+      `;
+      somEvento.src = "sussurro.mp3";
+      somEvento.play();
+    }
+
+    function dia3Confiar() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Nova Aliança</h2>
+    <img src="img/lucas-sobrevivente.PNG" alt="Lucas sobrevivente" style="width:100%; border-radius:8px; margin: 10px 0;">
+    <h2>Nova Aliança</h2>
+    <p>Ele se chama Lucas, ex-paramédico. Oferece abrigo e medicamentos em troca de companhia. Vocês combinam uma senha para reconhecer aliados.</p>
+    <p>Você sente um pouco de esperança.</p>
+    <p>Fim do Dia 3</p>
+    <div class="escolha" onclick="iniciarDia4()">Continuar para o Dia 4</div>
+  `;
+  somEvento.src = "esperanca.mp3";
+  somEvento.play();
+}
+
+function dia3Recuar() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Solidão Escolhida</h2>
+    <p>Você recua em silêncio. A cada passo, sente que talvez tenha deixado passar sua última chance de conexão humana.</p>
+    <p>Fim do Dia 3</p>
+    <div class="escolha" onclick="iniciarDia4()">Continuar para o Dia 4</div>
+  `;
+  somEvento.src = "vento-solidao.mp3";
+  somEvento.play();
+}
+    function iniciarDia4() {
+      document.body.style.backgroundImage = "url('img/fundo-dia4.PNG')";
+      document.body.style.backgroundSize = "cover";
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 4: Alerta Vermelho</h2>
+        <p>Lucas te acorda no meio da madrugada: "Eles estão vindo. Não sei como nos acharam, mas estão perto."</p>
+        <div class="escolha" onclick="dia4Preparar()">Preparar emboscada com Lucas</div>
+        <div class="escolha" onclick="dia4Fuga()">Fugir imediatamente</div>
+      `;
+      somEvento.src = "alarme-perigo.mp3";
+      somEvento.play();
+    }
+
+    function dia4Preparar() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Armadilha Silenciosa</h2>
+        <img src="img/armadilha-explosao.PNG" alt="Explosão" style="width:100%; border-radius:8px;">
+        <p>Vocês usam fios, cacos de vidro e gasolina. Ficam à espreita enquanto as criaturas se aproximam.</p>
+        <p>Quando o primeiro invade, Lucas puxa o fio. Uma explosão os cega temporariamente.</p>
+        <div class="escolha" onclick="dia4Sobreviventes()">Verificar área e buscar sobreviventes</div>
+        <div class="escolha" onclick="dia4SeguirRota()">Seguir plano de evacuação</div>
+      `;
+      somEvento.src = "explosao.mp3";
+      somEvento.play();
+    }
+
+    function dia4Fuga() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Fuga pela escuridão</h2>
+        <p>Você e Lucas fogem por uma trilha desconhecida. No caminho, ouvem passos e sons metálicos atrás de vocês.</p>
+        <p>Algo os persegue, mas vocês não olham para trás.</p>
+        <div class="escolha" onclick="dia4Esconder()">Se esconder em ruína próxima</div>
+        <div class="escolha" onclick="dia4Separar()">Separar-se para despistar</div>
+      `;
+      somEvento.src = "passos-rastros.mp3";
+      somEvento.play();
+    }
+
+    function dia4Sobreviventes() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Zona de Conflito</h2>
+        <p>Vocês encontram dois jovens assustados e armados. Eles apontam armas. Confiança será essencial.</p>
+        <div class="escolha" onclick="dia4Alianca()">Baixar armas e conversar</div>
+        <div class="escolha" onclick="dia4RecuarSozinho()">Recuar e seguir sozinho</div>
+      `;
+      somEvento.src = "tensao.mp3";
+      somEvento.play();
+    }
+
+    function dia4SeguirRota() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Evacuação ao Amanhecer</h2>
+    <p>Com o nascer do sol, você e Lucas cruzam a ponte para a zona rural. A cidade queimar atrás de vocês é o fim de um capítulo.</p>
+    <p>Fim do Dia 4</p>
+    <div class="escolha" onclick="iniciarDia5()">Continuar para o Dia 5</div>
+  `;
+  somEvento.src = "ponte-crepitar.mp3";
+  somEvento.play();
+}
+
+function dia4Esconder() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Ruína Silenciosa</h2>
+    <p>Vocês se escondem entre os escombros. Um zumbi entra no local, fareja, mas não os vê. A tensão é insuportável.</p>
+    <p>Fim do Dia 4</p>
+    <div class="escolha" onclick="iniciarDia5()">Continuar para o Dia 5</div>
+  `;
+  somEvento.src = "respiracao-baixa.mp3";
+  somEvento.play();
+}
+
+function dia4Separar() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Separação</h2>
+    <p>Você corre para um lado, Lucas para outro. Horas depois, você está sozinho novamente... mas talvez vivo.</p>
+    <p>Fim do Dia 4</p>
+    <div class="escolha" onclick="iniciarDia5()">Continuar para o Dia 5</div>
+  `;
+  somEvento.src = "eco-distante.mp3";
+  somEvento.play();
+}
+
+function dia4Alianca() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Nova Aliança Formada</h2>
+    <p>Os jovens abaixam as armas. Agora vocês são quatro. Mais bocas para alimentar, mas também mais olhos vigiando.</p>
+    <p>Fim do Dia 4</p>
+    <div class="escolha" onclick="iniciarDia5()">Continuar para o Dia 5</div>
+  `;
+  somEvento.src = "acordo.mp3";
+  somEvento.play();
+}
+
+function dia4RecuarSozinho() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Isolamento</h2>
+    <p>Você recua. Lucas hesita, mas te segue. Os jovens desaparecem. O medo de estar sempre desconectado cresce.</p>
+    <p>Fim do Dia 4</p>
+    <div class="escolha" onclick="iniciarDia5()">Continuar para o Dia 5</div>
+  `;
+  somEvento.src = "passos-longe.mp3";
+  somEvento.play();
+}
+    function iniciarDia5() {
+      document.body.style.backgroundImage = "url('img/fundo-dia5.PNG')";
+      document.body.style.backgroundSize = "cover";
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 5: Verdades e Mentiras</h2>
+        <p>A tensão entre o grupo cresce. Um dos jovens fala em uma transmissão de rádio que interceptou: "Estão caçando sobreviventes... humanos caçando humanos."</p>
+        <div class="escolha" onclick="dia5Confiar()">Confiar nos novos aliados</div>
+        <div class="escolha" onclick="dia5Espiar()">Espiar o grupo durante a madrugada</div>
+      `;
+      somEvento.src = "radio-interferencia.mp3";
+      somEvento.play();
+    }
+
+    function dia5Confiar() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Aliança Selada</h2>
+        <p>Você escolhe confiar. O grupo divide tarefas. Lucas te passa um mapa antigo indicando uma zona segura no interior.</p>
+        <p>Durante a noite, um deles revela: "Temos só mais dois dias de comida".</p>
+        <div class="escolha" onclick="dia5Missao()">Organizar missão de busca</div>
+        <div class="escolha" onclick="dia5Dividir()">Dividir grupo em duplas</div>
+      `;
+      somEvento.src = "mapa-papel.mp3";
+      somEvento.play();
+    }
+
+    function dia5Espiar() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Descoberta Noturna</h2>
+        <p>Você ouve sussurros. Um dos jovens diz: "Vamos pegar as mochilas deles enquanto dormem."</p>
+        <p>Lucas aparece atrás de você e sussurra: "Eu ouvi também. Plano B, então?"</p>
+        <div class="escolha" onclick="dia5Armadilha()">Armar emboscada silenciosa</div>
+        <div class="escolha" onclick="dia5FugirAntes()">Fugir antes do amanhecer</div>
+      `;
+      somEvento.src = "sussurros-traicao.mp3";
+      somEvento.play();
+    }
+
+   function dia5Missao() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Missão Suicida</h2>
+    <p>Você e um aliado partem à procura de comida. Chegam a um depósito, mas ele está cercado por zumbis famintos.</p>
+    <p>Fim do Dia 5</p>
+    <div class="escolha" onclick="iniciarDia6()">Continuar para o Dia 6</div>
+  `;
+  somEvento.src = "zumbis-longe.mp3";
+  somEvento.play();
+}
+
+function dia5Dividir() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Divisão Estratégica</h2>
+    <p>Você lidera uma dupla, Lucas outra. Encontram recursos, mas descobrem pegadas estranhas em volta do abrigo ao retornar.</p>
+    <p>Fim do Dia 5</p>
+    <div class="escolha" onclick="iniciarDia6()">Continuar para o Dia 6</div>
+  `;
+  somEvento.src = "pegadas.mp3";
+  somEvento.play();
+}
+
+function dia5Armadilha() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Traição Prevenida</h2>
+    <p>Você e Lucas armam uma armadilha silenciosa. No momento certo, rendem os dois traidores e os expulsam do grupo.</p>
+    <p>Fim do Dia 5</p>
+    <div class="escolha" onclick="iniciarDia6()">Continuar para o Dia 6</div>
+  `;
+  somEvento.src = "corda-puxando.mp3";
+  somEvento.play();
+}
+
+function dia5FugirAntes() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Fuga às Pressas</h2>
+    <p>Com uma mochila leve, você e Lucas escapam para a floresta. Ao longe, sons de tiros ecoam do antigo abrigo.</p>
+    <p>Fim do Dia 5</p>
+    <div class="escolha" onclick="iniciarDia6()">Continuar para o Dia 6</div>
+  `;
+  somEvento.src = "tiros-distantes.mp3";
+  somEvento.play();
+}
+    function iniciarDia6() {
+      document.body.style.backgroundImage = "url('img/fundo-dia6.PNG')";
+      document.body.style.backgroundSize = "cover";
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 6: O Cerco</h2>
+        <p>Você e os aliados estão cercados. Alguém trancou o abrigo por fora. O rádio chia: "Último aviso. Entreguem-se ou queimaremos tudo."</p>
+        <div class="escolha" onclick="dia6Negociar()">Tentar negociar com os invasores</div>
+        <div class="escolha" onclick="dia6Resistir()">Organizar resistência e contra-ataque</div>
+      `;
+      somEvento.src = "radio-ultimato.mp3";
+      somEvento.play();
+    }
+
+    function dia6Negociar() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Negociação Perigosa</h2>
+        <p>Você fala ao rádio. "Estamos armados. Temos suprimentos. Podemos trocar."</p>
+        <p>Uma voz ríspida responde: "Queremos seu abrigo. E rápido."</p>
+        <div class="escolha" onclick="dia6Rendericao()">Aceitar rendição parcial</div>
+        <div class="escolha" onclick="dia6Traicao()">Concordar... mas planejar emboscada</div>
+      `;
+      somEvento.src = "negociacao-tensa.mp3";
+      somEvento.play();
+    }
+
+    function dia6Resistir() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Preparar a Resistência</h2>
+        <p>Você e Lucas organizam barricadas, posicionam garrafas explosivas e criam rotas de fuga.</p>
+        <p>Quando o ataque começa, o abrigo vira um campo de batalha.</p>
+        <div class="escolha" onclick="dia6FugaExplosiva()">Ativar armadilha e fugir</div>
+        <div class="escolha" onclick="dia6DefesaTotal()">Defender o abrigo até o fim</div>
+      `;
+      somEvento.src = "preparacao-batalha.mp3";
+      somEvento.play();
+    }
+
+   function dia6Rendericao() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Rendição Parcial</h2>
+    <p>Você entrega parte dos suprimentos. Os invasores pegam tudo e deixam vocês trancados. Lucas está furioso.</p>
+    <p>Fim do Dia 6</p>
+    <div class="escolha" onclick="iniciarDia7()">Continuar para o Dia 7</div>
+  `;
+  somEvento.src = "porta-trancada.mp3";
+  somEvento.play();
+}
+
+function dia6Traicao() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Reviravolta</h2>
+    <p>Enquanto fingem abrir o abrigo, você ativa explosivos improvisados. Os invasores são pegos de surpresa.</p>
+    <p>Vocês fogem pela saída secreta com suprimentos essenciais.</p>
+    <p>Fim do Dia 6</p>
+    <div class="escolha" onclick="iniciarDia7()">Continuar para o Dia 7</div>
+  `;
+  somEvento.src = "explosao-surpresa.mp3";
+  somEvento.play();
+}
+
+function dia6FugaExplosiva() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Fuga Explosiva</h2>
+    <p>Você aciona as armadilhas. A confusão permite escapar por um túnel antigo. O abrigo queima atrás de vocês.</p>
+    <p>Fim do Dia 6</p>
+    <div class="escolha" onclick="iniciarDia7()">Continuar para o Dia 7</div>
+  `;
+  somEvento.src = "fuga-tunel.mp3";
+  somEvento.play();
+}
+
+function dia6DefesaTotal() {
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Última Resistência</h2>
+    <p>Vocês enfrentam os invasores de frente. As perdas são grandes, mas o abrigo se mantém... por enquanto.</p>
+    <p>Fim do Dia 6</p>
+    <div class="escolha" onclick="iniciarDia7()">Continuar para o Dia 7</div>
+  `;
+  somEvento.src = "defesa-armada.mp3";
+  somEvento.play();
+}
+    function iniciarDia7() {
+      document.body.style.backgroundImage = "url('img/fundo-dia7.PNG')";
+      document.body.style.backgroundSize = "cover";
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 7: Reflexo e Escolha Final</h2>
+        <p>Uma semana passou. Você sobreviveu a zumbis, traições, perdas e decisões difíceis. Mas agora vem o maior dilema.</p>
+        <p>Um helicóptero militar sobrevoa a área. A transmissão diz: "Última chamada para extração. Um sobrevivente por ponto. Coordenadas confirmadas."</p>
+        <div class="escolha" onclick="dia7IrSozinho()">Correr sozinho para a extração</div>
+        <div class="escolha" onclick="dia7LevarLucas()">Levar Lucas e dividir chances</div>
+        <div class="escolha" onclick="dia7Ficar()">Ficar com o grupo e não arriscar</div>
+      `;
+      somEvento.src = "helicoptero.mp3";
+      somEvento.play();
+    }
+
+   function dia7IrSozinho() {
+  document.body.style.backgroundImage = "url('img/final-solidao.PNG')";
+  document.body.style.backgroundSize = "cover";
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Decisão Solitária</h2>
+    <img src="img/final-solidao.PNG" alt="Final solitário" style="width:100%; margin-bottom:10px; border-radius: 10px;">
+    <p>Você corre sem olhar para trás. Chega a tempo. O helicóptero decola. Lá de cima, você vê o mundo ruir... e seus amigos desaparecendo no horizonte.</p>
+    <div class="escolha" onclick="quizSobrevivente()">Reiniciar Quiz</div>
+  `;
+  somEvento.src = "voo-final.mp3";
+  somEvento.play();
+}
+
+function dia7LevarLucas() {
+  document.body.style.backgroundImage = "url('img/final-dupla.PNG')";
+  document.body.style.backgroundSize = "cover";
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Corrida Contra o Tempo</h2>
+    <img src="img/final-dupla.PNG" alt="Final com Lucas" style="width:100%; margin-bottom:10px; border-radius: 10px;">
+    <p>Você e Lucas correm juntos. No último segundo, você o empurra para dentro e segura no trenó da aeronave.</p>
+    <p>Ambos sobrevivem. Cicatrizes para sempre, mas vivos.</p>
+    <div class="escolha" onclick="quizSobrevivente()">Reiniciar Quiz</div>
+  `;
+  somEvento.src = "helicoptero-partida.mp3";
+  somEvento.play();
+}
+
+function dia7Ficar() {
+  document.body.style.backgroundImage = "url('img/final-coletivo.PNG')";
+  document.body.style.backgroundSize = "cover";
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Última Escolha</h2>
+    <img src="img/final-coletivo.PNG" alt="Final coletivo" style="width:100%; margin-bottom:10px; border-radius: 10px;">
+    <p>Você observa o helicóptero sumir. Olha para o grupo. Diz: "Não deixo ninguém para trás."</p>
+    <p>Vocês constroem uma nova base, longe das zonas infectadas.</p>
+    <div class="escolha" onclick="quizSobrevivente()">Reiniciar Quiz</div>
+  `;
+  somEvento.src = "fogueira-vento.mp3";
+  somEvento.play();
+}
+  function iniciarJogo() {
+  document.body.style.backgroundImage = "url('img/fundo-inicio.JPEG')"; // Adicionado o novo fundo para a tela inicial
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center"; // Opcional: para centralizar a imagem de fundo
+  nome = document.getElementById("nome")?.value || "Sobrevivente";
+  document.getElementById("conteudo").innerHTML = `
+    <h2>Bem-vindo, ${nome}</h2>
+    <p>Você acorda em um mundo devastado. Os primeiros sinais do apocalipse já são visíveis. Prepare-se.</p>
+    <div class="escolha" onclick="hora1()">Iniciar Dia 1 - Hora 1</div>
+  `;
+  somFundo.play(); // Adicionado para iniciar a música de fundo
+}
+
+    function hora1() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 1</h2>
+        <p>O sol mal nasce e você acorda com sirenes distantes. Algo não está certo. Seu celular vibra: alerta nacional. Você decide...</p>
+        <div class="escolha" onclick="hora2()">Vestir-se, pegar mochila e sair</div>
+        <div class="escolha" onclick="hora2()">Ficar e assistir ao noticiário</div>
+      `;
+      somEvento.src = "sirene-distante.mp3";
+      somEvento.play();
+    }
+
+    function hora2() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 2</h2>
+        <p>Você vê vizinhos em pânico, carros saindo, gente gritando. O sinal de celular começa a falhar.</p>
+        <div class="escolha" onclick="hora3()">Correr para a casa de um amigo</div>
+        <div class="escolha" onclick="hora3()">Tentar achar rádio ou mapa</div>
+      `;
+      somEvento.src = "alarme-rua.mp3";
+      somEvento.play();
+    }
+
+    function hora3() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 3</h2>
+        <p>Mais e mais pessoas somem das ruas. Um caminhão militar passa em alta velocidade. Você precisa decidir: ir para o interior ou se esconder?</p>
+        <div class="escolha" onclick="hora4()">Interior</div>
+        <div class="escolha" onclick="hora4()">Abrigo próximo</div>
+      `;
+      somEvento.src = "veiculo-militar.mp3";
+      somEvento.play();
+    }
+
+    function hora4() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 4</h2>
+        <p>Você encontra uma casa parcialmente saqueada. Há barulhos no andar de cima. Seu coração dispara.</p>
+        <div class="escolha" onclick="hora5()">Subir em silêncio</div>
+        <div class="escolha" onclick="hora5()">Sair rapidamente</div>
+      `;
+      somEvento.src = "casa crepitar.mp3";
+      somEvento.play();
+    }
+
+    function hora5() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 5</h2>
+        <p>Você ouve um rádio chiando. Há uma mensagem de emergência: 'Base segura no setor 12'.</p>
+        <div class="escolha" onclick="hora6()">Anotar coordenadas</div>
+        <div class="escolha" onclick="hora6()">Ignorar e desligar</div>
+      `;
+      somEvento.src = "radio-statico.mp3";
+      somEvento.play();
+    }
+
+    function hora6() {
+      document.getElementById("ccasa-conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 6</h2>
+        <p>Você sente fome. Uma pequena mercearia parece intacta, mas há portas trancadas e rastros estranhos na entrada.</p>
+        <div class="escolha" onclick="hora7()">Forçar entrada</div>
+        <div class="escolha" onclick="hora7()">Procurar outro local</div>
+      `;
+      somEvento.src = "porta-fundo.mp3";
+      somEvento.play();
+    }
+    function hora7() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 7</h2>
+        <p>Dentro da mercearia, você encontra algumas latas de comida e uma garrafa de água. Mas há marcas de unhas na parede...</p>
+        <div class="escolha" onclick="hora8()">Pegar tudo rapidamente e sair</div>
+        <div class="escolha" onclick="hora8()">Explorar o porão</div>
+      `;
+      somEvento.src = "passos-loja.mp3";
+      somEvento.play();
+    }
+
+    function hora8() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 8</h2>
+        <p>O porão está úmido e escuro. Você encontra uma escada que leva a uma saída nos fundos. Algo se move entre as caixas.</p>
+        <div class="escolha" onclick="hora9()">Subir a escada com cuidado</div>
+        <div class="escolha" onclick="hora9()">Investigar o que se moveu</div>
+      `;
+      somEvento.src = "escada-madeira.mp3";
+      somEvento.play();
+    }
+
+    function hora9() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 9</h2>
+        <p>Ao sair pelos fundos, você avista um grupo de pessoas em silêncio. Eles parecem armados, mas não são zumbis.</p>
+        <div class="escolha" onclick="hora10()">Chamar atenção</div>
+        <div class="escolha" onclick="hora10()">Observar de longe</div>
+      `;
+      somEvento.src = "vozes-distantes.mp3";
+      somEvento.play();
+    }
+    function hora10() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 10</h2>
+        <p>Você se aproxima com cautela. Um deles aponta uma arma, mas baixa ao ver que você está sozinho.</p>
+        <div class="escolha" onclick="hora11()">Conversar com o grupo</div>
+        <div class="escolha" onclick="hora11()">Seguir sem interagir</div>
+      `;
+      somEvento.src = "encontro-grupo.mp3";
+      somEvento.play();
+    }
+
+    function hora11() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 11</h2>
+        <p>Um dos membros do grupo oferece um pouco de água e diz: "Estamos indo para um abrigo subterrâneo".</p>
+        <div class="escolha" onclick="hora12()">Aceitar e acompanhá-los</div>
+        <div class="escolha" onclick="hora12()">Recusar e seguir sozinho</div>
+      `;
+      somEvento.src = "agua-oferta.mp3";
+      somEvento.play();
+    }
+
+    function hora12() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 12</h2>
+        <p>Após a decisão, você percebe que o céu escurece rapidamente. Uma tempestade está chegando. Hora de se abrigar.</p>
+        <div class="escolha" onclick="hora13()">Abrigar-se em uma garagem</div>
+        <div class="escolha" onclick="hora13()">Seguir até o hospital abandonado</div>
+      `;
+      somEvento.src = "vento-forte.mp3";
+      somEvento.play();
+    }
+    function hora13() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 13</h2>
+        <p>Você entra na garagem escura. Dentro, encontra uma velha caminhonete e latas de combustível.</p>
+        <div class="escolha" onclick="hora14()">Examinar o veículo</div>
+        <div class="escolha" onclick="hora14()">Ignorar e buscar outro abrigo</div>
+      `;
+      somEvento.src = "porta-garagem.mp3";
+      somEvento.play();
+    }
+
+    function hora14() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 14</h2>
+        <p>O veículo ainda funciona! Mas o som do motor atrai atenção indesejada. Sons de arranhões surgem do lado de fora.</p>
+        <div class="escolha" onclick="hora15()">Desligar motor e se esconder</div>
+        <div class="escolha" onclick="hora15()">Acelerar e fugir da área</div>
+      `;
+      somEvento.src = "motor-arranque.mp3";
+      somEvento.play();
+    }
+
+    function hora15() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 15</h2>
+        <p>Você consegue despistar os sons ou sair ileso. Mas seu coração ainda bate forte. Um novo destino o espera.</p>
+        <div class="escolha" onclick="hora16()">Ir para a floresta</div>
+        <div class="escolha" onclick="hora16()">Voltar para a cidade</div>
+      `;
+      somEvento.src = "passos-apressados.mp3";
+      somEvento.play();
+    }
+    function hora16() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 16</h2>
+        <p>Na floresta, os sons são diferentes. Galhos quebram ao longe. Você encontra uma trilha mal sinalizada.</p>
+        <div class="escolha" onclick="hora17()">Seguir a trilha</div>
+        <div class="escolha" onclick="hora17()">Criar sua própria rota</div>
+      `;
+      somEvento.src = "floresta-passos.mp3";
+      somEvento.play();
+    }
+
+    function hora17() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 17</h2>
+        <p>Você encontra uma cabana abandonada. Há sinais de presença recente: uma fogueira apagada e roupas secando.</p>
+        <div class="escolha" onclick="hora18()">Entrar com cuidado</div>
+        <div class="escolha" onclick="hora18()">Observar de longe</div>
+      `;
+      somEvento.src = "madeira-creak.mp3";
+      somEvento.play();
+    }
+
+    function hora18() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 18</h2>
+        <p>Dentro da cabana, você encontra comida enlatada e uma fotografia de família. Mas ouve passos vindo da trilha.</p>
+        <div class="escolha" onclick="hora19()">Se esconder atrás da porta</div>
+        <div class="escolha" onclick="hora19()">Sair pelos fundos</div>
+      `;
+      somEvento.src = "passos-proximos.mp3";
+      somEvento.play();
+    }
+    function hora19() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 19</h2>
+        <p>Você segura a respiração atrás da porta. Uma figura entra lentamente... mas é um velho sobrevivente, assustado como você.</p>
+        <div class="escolha" onclick="hora20()">Falar com ele</div>
+        <div class="escolha" onclick="hora20()">Fugir silenciosamente</div>
+      `;
+      somEvento.src = "porta-range.mp3";
+      somEvento.play();
+    }
+
+    function hora20() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 20</h2>
+        <p>Ele se chama Otávio. Está machucado e faminto. Você divide comida e ele conta sobre um comboio que parte ao amanhecer.</p>
+        <div class="escolha" onclick="hora21()">Ir com Otávio encontrar o comboio</div>
+        <div class="escolha" onclick="hora21()">Seguir sozinho para outro abrigo</div>
+      `;
+      somEvento.src = "fogueira-crepitar.mp3";
+      somEvento.play();
+    }
+
+    function hora21() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 21</h2>
+        <p>Vocês atravessam a floresta com lanternas fracas. Ao longe, latidos e algo se arrastando pelo mato.</p>
+        <div class="escolha" onclick="hora22()">Apagar luzes e se esconder</div>
+        <div class="escolha" onclick="hora22()">Correr em direção oposta</div>
+      `;
+      somEvento.src = "galhos-partindo.mp3";
+      somEvento.play();
+    }
+
+    function hora22() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 22</h2>
+        <p>Vocês se escondem em uma fenda entre pedras. O barulho passa. Um rádio toca brevemente: "Setor seguro atualizado. Distrito L-3."</p>
+        <div class="escolha" onclick="hora23()">Anotar e seguir o rádio</div>
+        <div class="escolha" onclick="hora23()">Ignorar e seguir para onde Otávio sugeriu</div>
+      `;
+      somEvento.src = "radio-fraco.mp3";
+      somEvento.play();
+    }
+
+    function hora23() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 23</h2>
+        <p>Chegam a um galpão escondido. Dentro, sacos de dormir, um mapa detalhado e anotações sobre patrulhas de saqueadores.</p>
+        <div class="escolha" onclick="hora24()">Decidir usar o abrigo</div>
+        <div class="escolha" onclick="hora24()">Continuar em direção ao L-3</div>
+      `;
+      somEvento.src = "portao-galpao.mp3";
+      somEvento.play();
+    }
+
+    function hora24() {
+      document.getElementById("conteudo").innerHTML = `
+        <h2>Dia 1 - Hora 24</h2>
+        <p>Você adormece sob os sons da floresta. Mas algo desperta você antes do amanhecer. Um sussurro vindo do andar de cima do galpão...</p>
+        <p>Continuação no Dia 2...</p>
+        <div class="escolha" onclick="iniciarDia2()">Avançar para o Dia 2</div>
+      `;
+      somEvento.src = "sussurro-madrugada.mp3";
+      somEvento.play();
+    }
+  </script>
+</body>
+</html>
